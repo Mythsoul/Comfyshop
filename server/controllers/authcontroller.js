@@ -5,38 +5,33 @@ import bcrypt from "bcrypt"
 import { hashPassword } from "../models/authmodels.js";
 dotenv.config(); 
 
-// ok now i forgot : > 
-
 export const login = async(req , res)=>{  
- const {Email , Password} = req.bod; 
- const saltRounds = "10"; 
+ const {email , password } = req.body; 
  try{ 
-    const response = await db.query("select * from users where Email = $1 and password = $2" , [Email  , Password]); 
-    if(response.rows === 0 ){ 
-        return res.json("No User found"); 
+    const checkavailability = await db.query("select * from users where email = $1" , [email]);
+    if(checkavailability.rows < 1) { 
+        return res.json("User does not exist");
     }
-    const userpassword = Password; 
-    const userhashedPassword = bcrypt.hash(userpassword , saltRounds); 
-    // project karle na mene to alag na sikha and mereko aata bhi nahi utna bas basics aate udemy ka course tha ig and youtube se  ha udemy me thi ak angelia kuch karke 
-    const hashedPassword = response.rows[0].password; 
-    const checkcorrectness =await bcrypt.compare(hashedPassword , userhashedPassword); 
-    if(checkcorrectness){ 
-        console.log("user is authenticated ")
+    const userhashedpassword = checkavailability.rows[0].password;
+    const checkpassword = await bcrypt.compare(password , userhashedpassword);   
+    if(checkpassword){ 
+
+        return res.json("User is successfully logged in");
     }else{ 
-        console.log("user is not logged in cause the data mismatched : > "); 
+        return res.json("Incorrect password");
     }
- }catch(err){
-    throw err; 
+ }catch(err){ 
+    throw err;
  }
 }
 
-
+// Register user done : > 
 export const registerUser = async(req , res)=>{ 
-    console.log(req.body);
-    const {email , password } = req.body;
+    const {email , password } = req.body; 
     try{ 
-        const hashedpassword = hashPassword(password); 
+        const hashedpassword = await hashPassword(password)
         const response = await db.query("insert into users(email , password) values ($1 , $2) returning *" , [email , hashedpassword]);
+        console.log(response.rows)
         if(response.rows  > 0 ){ 
             return res.json("User is successfully registered");
         }else{ 
@@ -47,5 +42,3 @@ export const registerUser = async(req , res)=>{
         throw err; 
     }
 }
-
-/// abhi aaya hu afkk tha 
