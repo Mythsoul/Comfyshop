@@ -15,7 +15,7 @@ export const login = async(req , res)=>{
     const userhashedpassword = checkavailability.rows[0].password;
     const checkpassword = await bcrypt.compare(password , userhashedpassword);   
     if(checkpassword){ 
-
+        req.session.user = { email: checkavailability.rows[0].email };
         return res.json("User is successfully logged in");
     }else{ 
         return res.json("Incorrect password");
@@ -25,6 +25,16 @@ export const login = async(req , res)=>{
  }
 }
 
+export const logout = (req, res) => {
+    req.session.destroy(err => {
+        if (err) {
+            return res.status(500).send('Could not log out.');
+        } else {
+            res.send('Logged out');
+        }
+    });
+};
+
 // Register user done : > 
 export const registerUser = async(req , res)=>{ 
     const {email , password } = req.body; 
@@ -33,7 +43,10 @@ export const registerUser = async(req , res)=>{
         const response = await db.query("insert into users(email , password) values ($1 , $2) returning *" , [email , hashedpassword]);
         console.log(response.rows)
         if(response.rows  > 0 ){ 
+            const user = response.rows[0]; 
+            req.session.user = { email: user.email };
             return res.json("User is successfully registered");
+
         }else{ 
             return res.json("An error occured while registering the use"); 
 
@@ -42,3 +55,4 @@ export const registerUser = async(req , res)=>{
         throw err; 
     }
 }
+

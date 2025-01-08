@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import authroutes from "./routes/authroutes.js";
 import bodyParser from "body-parser";
 import rateLimit from "express-rate-limit";
+import session from "express-session";
 
 dotenv.config(); 
 const app = express(); 
@@ -17,6 +18,13 @@ const limiter = rateLimit({
 app.use(limiter);
 app.use(bodyParser.json());
 
+// Session configuration
+app.use(session({
+    secret: 'Just a normal secret key ',
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false } 
+}));
 
 app.use(authroutes);
 
