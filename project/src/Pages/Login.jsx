@@ -11,16 +11,11 @@ import { useDispatch } from "react-redux"
 import { login } from "@/store/Authslice"
 export default function LoginForm() {
   const [isloging, Setisloging] = useState(false);
-  const [error, setError] = useState(
-    { 
-      error : "Error",
-      status : false
-    }
-);
-  const { register, handleSubmit, reset } = useForm();
+  const [error, setError] = useState(null);
+  const { register, handleSubmit, reset, formState: { errors } } = useForm();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
+axios.defaults.withCredentials = true;
   const handleLogin = async (data) => {
     try {
       Setisloging(true);
@@ -36,20 +31,14 @@ export default function LoginForm() {
         dispatch(login());
         navigate("/");
       } else if (response.status === 401) {
-        setError({ 
-          error : "Incorrect email or password",
-          status : true
-        })
+        setError("Incorrect email or password");
       } else {
         throw new Error("Login failed");
       }
     } catch (err) {
       console.error("Login error:", err);
       Setisloging(false);
-      setError({ 
-        error : "Login failed, please try again later",
-        status : true
-      })
+      setError("Login failed, please try again later");
     }
   };
 
@@ -64,7 +53,6 @@ export default function LoginForm() {
           <form onSubmit={handleSubmit(handleLogin)}>
            
             <div className="space-y-2">
-              {error.status === true && <p className="text-red-500">{error.error}</p>}
               <Input
                 id="email"
                 type="email"
@@ -78,12 +66,15 @@ export default function LoginForm() {
                   }
                 })}
               />
+              {errors.email && <p className="text-red-500 font-mono">{errors.email.message}</p>}
             </div>
+
             <div className="space-y-2">
               <Input
                 id="password"
                 type="password"
                 placeholder="••••••••"
+                name="password"
                 {...register("password", { 
                   required: true,
                   minLength: { 
@@ -96,6 +87,7 @@ export default function LoginForm() {
                   }
                 })}
               />
+              {errors.password && <p className="text-red-500 font-mono">{errors.password.message}</p>}
             </div>
             <Button className="w-full" type="submit" disabled={isloging}>
               {isloging ? "Signing in ..." : "Sign in"}
@@ -138,5 +130,4 @@ export default function LoginForm() {
     </div>
   );
 }
-
 

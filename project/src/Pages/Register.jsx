@@ -1,4 +1,3 @@
-/*************  ✨ Codeium Command 🌟  *************/
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -14,13 +13,10 @@ import { login } from "@/store/Authslice"
 export default function RegisterForm() {
   const [isRegistering, setIsRegistering] = useState(false);
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
-  const [error, setError] = useState({
-    error: "",
-    status: false
-  });
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
+axios.defaults.withCredentials = true;
   const handleRegister = async (data) => {
     try {
       setIsRegistering(true);
@@ -29,6 +25,7 @@ export default function RegisterForm() {
         console.error("VITE_REGISTER_API_URL is not defined");
         return;
       }
+      console.log(data)
       const response = await axios.post(url, data);
       if (response.status === 201) {
         reset();
@@ -42,27 +39,15 @@ export default function RegisterForm() {
           duration={3000}
         />;
       } else if (response.status === 409) {
-        setError({
-          error: "Account is already registered",
-          status: true
-        });
+        setError("Account is already registered");
       } else {
-        setError({
-          error: "An error occurred while registering the user",
-          status: true
-        });
+        setError("An error occurred while registering the user");
       }
     } catch (err) {
       if (err.response && err.response.status === 409) {
-        setError({
-          error: "Account is already registered",
-          status: true
-        });
+        setError("Account is already registered");
       } else {
-        setError({
-          error: "An error occurred while registering the user",
-          status: true
-        });
+        setError("An error occurred while registering the user");
       }
       console.error("Registration error:", err);
     } finally {
@@ -78,16 +63,27 @@ export default function RegisterForm() {
           <CardDescription>Enter your details to create an account</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {error.status && <p className="text-red-500">{error.error}</p>}
+          {error && <p className="text-red-500">{error}</p>}
           <form onSubmit={handleSubmit(handleRegister)}>
+          <div className="space-y-2">
+              <Input
+                id="username"
+                type="username"
+                placeholder="username"
+                {...register("username", { required: "Username is required" , pattern : {value : /^[a-zA-Z0-9_]{5,20}$/ , message : "Username should be at least 5 characters and at most 20 characters long"} })}
+
+              />
+              {errors.username && <p className="text-red-500 font-mono">{errors.username?.message}</p>}
+            </div>
             <div className="space-y-2">
               <Input
                 id="email"
                 type="email"
                 placeholder="m@example.com"
                 {...register("email", { required: "Email is required" })}
-                error={errors.email?.message}
+             
               />
+              {errors.email && <p className="text-red-500 font-mono">{errors.email?.message}</p>}
             </div>
             <div className="space-y-2">
               <Input
@@ -95,8 +91,9 @@ export default function RegisterForm() {
                 type="password"
                 placeholder="••••••••"
                 {...register("password", { required: "Password is required" })}
-                error={errors.password?.message}
+      
               />
+              {errors.password && <p className="text-red-500 font-mono">{errors.password?.message}</p>}
             </div>
             <Button className="w-full" type="submit" disabled={isRegistering}>
               {isRegistering ? "Registering ..." : "Register"}
@@ -140,5 +137,3 @@ export default function RegisterForm() {
   )
 }
 
-
-/******  7efc466a-ed66-4e69-9d73-e278ddff943c  *******/

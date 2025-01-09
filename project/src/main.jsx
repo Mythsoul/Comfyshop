@@ -10,7 +10,6 @@ import RegisterForm from './Pages/Register'
 import { Provider } from 'react-redux'
 import Store from './store/store'
 import ForwardAuthenticated from './components/ForwardAuthenticated'
-import AuthProvider from './components/AuthProvider'
 import Layout from './components/Layout'
 import { ToastProvider } from '@radix-ui/react-toast'; // Import ToastProvider
 
@@ -20,7 +19,7 @@ createRoot(document.getElementById('root')).render(
       <Provider store={Store}>
         <ToastProvider> {/* Wrap with ToastProvider */}
           <Layout>
-            <AuthProvider>
+        
               <Routes>
                 <Route path='/' element={<App />} />
                 <Route path='/login' element={
@@ -34,7 +33,7 @@ createRoot(document.getElementById('root')).render(
                   </ForwardAuthenticated>
                 } />
               </Routes>
-            </AuthProvider>
+           
           </Layout>
         </ToastProvider>
       </Provider>

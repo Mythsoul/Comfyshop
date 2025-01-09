@@ -15,6 +15,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card"
+import axios from 'axios'
 
 export default function Homepage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -23,8 +24,14 @@ export default function Homepage() {
     // Return a static URL directly
     return "https://source.unsplash.com/random/800x600?" + category;
   }
+  axios.defaults.withCredentials = true;
 useEffect(()=>{ 
-    
+  axios.get("http://localhost:3000/api/isAuthenticated" , { withCredentials: true }).then((response) => {
+    console.log(response.data); 
+  })
+  .catch((error) => {
+    console.error("Error during authentication check:", error.response ? error.response.data : error.message);
+  });
 } , [])
   return (
     <div className="min-h-screen bg-white">
