@@ -1,14 +1,12 @@
 import express from "express"; 
-import { login, registerUser } from "../controllers/authcontroller.js";
-import isAuthenticated from "../middleware/authMiddleware.js";
+import { login, logout, registerUser } from "../controllers/authcontroller.js";
+import { forwardAuthenticated  , isAuthenticated} from "../middleware/authMiddleware.js";
 
 const router = express();
 
-router.post("/api/register" , registerUser); 
-router.post("/api/login" , login);
 
-router.get("/api/protected", isAuthenticated, (req, res) => {
-    res.send('This is a protected route');
-});
-
+router.post("/api/register", forwardAuthenticated, registerUser); 
+router.post("/api/login", forwardAuthenticated, login);
+router.get("/api/isAuthenticated", isAuthenticated);
+router.get("/api/logout" , logout)
 export default router;

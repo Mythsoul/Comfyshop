@@ -1,5 +1,5 @@
 
-const isAuthenticated = (req, res, next) => {
+export const isAuthenticated = (req, res, next) => {
     if (req.session.user) {
         next();
     } else {
@@ -7,4 +7,11 @@ const isAuthenticated = (req, res, next) => {
     }
 };
 
-export default isAuthenticated;
+// Middleware to forward authenticated users
+export const forwardAuthenticated = (req, res, next) => {
+    if (!req.session.user) {
+        return next();
+    } else {
+        return res.redirect('/');
+    }
+} 

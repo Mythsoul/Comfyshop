@@ -15,3 +15,16 @@ export async function hashPassword(password) {
     }
 }
 
+
+export async function checkAccAvailibilty(email){ 
+    try{ 
+     const response =await db.query("Select * from users where email=$1" , [email]); 
+     if(response.rows && response.rows.length > 0){ 
+        return false;
+     }
+     return true;
+    }catch(err){ 
+        console.log(err); 
+        throw new Error("An error occured while checking the account avaibility"); 
+    }
+}
