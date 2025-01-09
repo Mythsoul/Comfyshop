@@ -6,26 +6,50 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import axios from "axios"
 import { Toast } from "@/components/ui/toast"
+import { useNavigate } from "react-router"
+import { useDispatch } from "react-redux"
+import { login } from "@/store/Authslice"
 export default function LoginForm() {
   const [isloging, Setisloging] = useState(false);
+  const [error, setError] = useState(
+    { 
+      error : "Error",
+      status : false
+    }
+);
   const { register, handleSubmit, reset } = useForm();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleLogin = async (data) => {
     try {
-      const response = await axios.post("/api/login", data);
+      Setisloging(true);
+      const url = import.meta.env.VITE_LOGIN_API_URL;
+      if (!url) {
+        console.error("VITE_LOGIN_API_URL is not defined");
+        return;
+      }
+      const response = await axios.post(url, data);
       if (response.status === 200) {
-        Setisloging(true);
         reset();
-        Toast({
-          title: "Login Successful",
-          description: "You are logged in",
-          variant: "default",
-          duration: 3000,
-        });
+        Setisloging(false);
+        dispatch(login());
+        navigate("/");
+      } else if (response.status === 401) {
+        setError({ 
+          error : "Incorrect email or password",
+          status : true
+        })
+      } else {
+        throw new Error("Login failed");
       }
     } catch (err) {
-      console.log(err);
-      throw err;
+      console.error("Login error:", err);
+      Setisloging(false);
+      setError({ 
+        error : "Login failed, please try again later",
+        status : true
+      })
     }
   };
 
@@ -38,12 +62,21 @@ export default function LoginForm() {
         </CardHeader>
         <CardContent className="space-y-4">
           <form onSubmit={handleSubmit(handleLogin)}>
+           
             <div className="space-y-2">
+              {error.status === true && <p className="text-red-500">{error.error}</p>}
               <Input
                 id="email"
                 type="email"
                 placeholder="m@example.com"
-                {...register("username", { required: true })}
+                {...register("email", { 
+                  required: true,
+                  minLength: { value: 5 },
+                  pattern: { 
+                    value: /^[^@ ]+@[^@ ]+\.[^@ .]{2,}$/,
+                    message: "Email is not valid"
+                  }
+                })}
               />
             </div>
             <div className="space-y-2">
@@ -51,7 +84,17 @@ export default function LoginForm() {
                 id="password"
                 type="password"
                 placeholder="••••••••"
-                {...register("password", { required: true })}
+                {...register("password", { 
+                  required: true,
+                  minLength: { 
+                    value: 8,
+                    message: "Password must be at least 8 characters long"
+                  },
+                  maxLength: {
+                    value: 40,
+                    message: "Password must be at most 40 characters long"
+                  }
+                })}
               />
             </div>
             <Button className="w-full" type="submit" disabled={isloging}>
@@ -93,6 +136,7 @@ export default function LoginForm() {
         </CardFooter>
       </Card>
     </div>
-  )
+  );
 }
+
 

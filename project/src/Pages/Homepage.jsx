@@ -1,6 +1,4 @@
-'use client'
-
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Menu, ShoppingCart, Search, X, ChevronRight, Heart, ArrowRight } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -20,12 +18,14 @@ import {
 
 export default function Homepage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-
+  
   const getRandomImage = (category) => {
     // Return a static URL directly
     return "https://source.unsplash.com/random/800x600?" + category;
   }
-
+useEffect(()=>{ 
+    
+} , [])
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}

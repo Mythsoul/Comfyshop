@@ -1,3 +1,4 @@
+/*************  ✨ Codeium Command 🌟  *************/
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -5,35 +6,67 @@ import { Icons } from "@/components/ui/icons"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import axios from "axios"
+import { Navigate, useNavigate } from "react-router"
 import { Toast } from "@/components/ui/toast"
-
+import { useDispatch } from "react-redux"
+import { login } from "@/store/Authslice"
 
 export default function RegisterForm() {
   const [isRegistering, setIsRegistering] = useState(false);
-  const { register, handleSubmit, reset } = useForm();
-
+  const { register, handleSubmit, reset, formState: { errors } } = useForm();
+  const [error, setError] = useState({
+    error: "",
+    status: false
+  });
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleRegister = async (data) => {
     try {
-      const url = String(import.meta.env.VITE_REGISTER_API_URL); // Ensure this is correctly defined
-      console.log("Register API URL:", url); // Add this line to verify the URL
+      setIsRegistering(true);
+      const url = import.meta.env.VITE_REGISTER_API_URL;
       if (!url) {
-        throw new Error("VITE_REGISTER_API_URL is not defined");
+        console.error("VITE_REGISTER_API_URL is not defined");
+        return;
       }
       const response = await axios.post(url, data);
-      if (response.status === 200) {
-        setIsRegistering(true);
+      if (response.status === 201) {
         reset();
-        Toast({
-          title: "Registration Successful",
-          description: "Your account has been created",
-          variant: "default",
-          duration: 3000,
+        setIsRegistering(false);
+        dispatch(login(response.data));
+        navigate("/");
+        <Toast
+          title="Registration successful"
+          description="You have successfully registered"
+          variant="default"
+          duration={3000}
+        />;
+      } else if (response.status === 409) {
+        setError({
+          error: "Account is already registered",
+          status: true
+        });
+      } else {
+        setError({
+          error: "An error occurred while registering the user",
+          status: true
         });
       }
     } catch (err) {
-      console.log(err);
-      throw err;
+      if (err.response && err.response.status === 409) {
+        setError({
+          error: "Account is already registered",
+          status: true
+        });
+      } else {
+        setError({
+          error: "An error occurred while registering the user",
+          status: true
+        });
+      }
+      console.error("Registration error:", err);
+    } finally {
+      setIsRegistering(false);
     }
   };
 
@@ -45,13 +78,15 @@ export default function RegisterForm() {
           <CardDescription>Enter your details to create an account</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {error.status && <p className="text-red-500">{error.error}</p>}
           <form onSubmit={handleSubmit(handleRegister)}>
             <div className="space-y-2">
               <Input
                 id="email"
                 type="email"
                 placeholder="m@example.com"
-                {...register("email", { required: true })}
+                {...register("email", { required: "Email is required" })}
+                error={errors.email?.message}
               />
             </div>
             <div className="space-y-2">
@@ -59,7 +94,8 @@ export default function RegisterForm() {
                 id="password"
                 type="password"
                 placeholder="••••••••"
-                {...register("password", { required: true })}
+                {...register("password", { required: "Password is required" })}
+                error={errors.password?.message}
               />
             </div>
             <Button className="w-full" type="submit" disabled={isRegistering}>
@@ -100,9 +136,9 @@ export default function RegisterForm() {
           </p>
         </CardFooter>
       </Card>
-  
     </div>
   )
 }
 
 
+/******  7efc466a-ed66-4e69-9d73-e278ddff943c  *******/

@@ -1,5 +1,4 @@
-import { ToastContainer } from "@/components/ui/toast"
-import { ReactNode } from "react"
+import { ToastContainer } from "@/components/ui/toast"; // Import ToastContainer
 
 export default function Layout({ children }) {
   return (
@@ -13,7 +12,7 @@ export default function Layout({ children }) {
       <footer className="bg-gray-800 text-white p-4 text-center">
         <p>&copy; 2023 ComfyShop. All rights reserved.</p>
       </footer>
-      <ToastContainer />
+      <ToastContainer /> {/* Use ToastContainer */}
     </div>
-  )
+  );
 }
