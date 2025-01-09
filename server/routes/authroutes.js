@@ -1,7 +1,7 @@
 import express from "express"; 
 import { login, logout, registerUser } from "../controllers/authcontroller.js";
-import { forwardAuthenticated  , isAuthenticated} from "../middleware/authMiddleware.js";
-
+import { forwardAuthenticated  } from "../middleware/authMiddleware.js";
+import { isAuthenticated } from "../controllers/authcontroller.js";
 const router = express();
 
 
