@@ -10,14 +10,14 @@ export const login = async (req, res) => {
   const { email, password } = req.body;
   try {
     const availability = await checkAccAvailibilty(email);
-    if (!availability) {
+    if (availability) { 
       return res.status(404).json({ message: "User does not exist" });
     }
     const user = await db.query("SELECT password FROM users WHERE email = $1", [email]);
     const checkPassword = await bcrypt.compare(password, user.rows[0].password);
     if (checkPassword) {
       req.session.user = { user : user.rows[0] }; 
-      req.session.save(); // Ensure session is saved
+      req.session.save(); 
 
       return res.status(200).json({ message: "User is successfully logged in" });
     } else {

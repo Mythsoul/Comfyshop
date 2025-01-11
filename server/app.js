@@ -13,7 +13,8 @@ const port = process.env.PORT || 3000;
 
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, 
-    max: 100, // Increase the limit for testing
+    max: 100, 
+    message: "Too many requests from this IP, please try again after 15 minutes"
 });
 
 app.use(limiter);
@@ -30,7 +31,7 @@ app.use(cookieParser());
 
 // Configure session middleware
 app.use(session({
-    secret: 'your_secret_key', // Replace with your secret key
+    secret: 'just a random secret', 
     resave: false,
     saveUninitialized: true,
     cookie: { secure: false } 

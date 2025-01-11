@@ -16,23 +16,42 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card"
 import axios from 'axios'
-
+import { useDispatch } from 'react-redux'
+import { login } from '@/store/Authslice'
 export default function Homepage() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false); 
+  const [user , setuser] = useState({ 
+   username : "",
+   email : "", 
+
+  })
+  const dispatch = useDispatch(); 
   
-  const getRandomImage = (category) => {
+    const getRandomImage = (category) => {
     // Return a static URL directly
     return "https://source.unsplash.com/random/800x600?" + category;
   }
   axios.defaults.withCredentials = true;
 useEffect(()=>{ 
-  axios.get("http://localhost:3000/api/isAuthenticated" , { withCredentials: true }).then((response) => {
-    console.log(response.data); 
-  })
-  .catch((error) => {
-    console.error("Error during authentication check:", error.response ? error.response.data : error.message);
-  });
-} , [])
+  const checkAuthStatus = async () => {
+    try {
+      const response = await axios.get(import.meta.env.VITE_CHECK_AUTH_URL);
+      if (response.status === 200 && response.data) { 
+        dispatch(login(response.data));
+        setuser(response.data);
+
+      }
+    } catch (error) {
+      console.error('Failed to check auth status', error);
+    }
+
+  }
+
+  checkAuthStatus(); 
+  
+  
+} , []);
+
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}

@@ -1,5 +1,3 @@
-
-// Middleware to forward authenticated users
 export const forwardAuthenticated = (req, res, next) => {
     if (!req.session.user) {
         return next();

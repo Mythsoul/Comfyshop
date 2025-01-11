@@ -18,16 +18,21 @@ export const database = new pg.Pool({
     port : Number(process.env.DB_PORT),
     ssl : { 
         rejectUnauthorized: false
-    }// Disable SSL
-});
-
-database.connect((err) => {
-    if (err) {
-        console.error('Failed to connect to database', err);
-    } else {
-        console.log("Connected to database");
     }
 });
+
+const connectWithRetry = () => {
+    database.connect((err) => {
+        if (err) {
+            console.error('Failed to connect to database', err);
+            setTimeout(connectWithRetry, 5000); 
+        } else {
+            console.log("Connected to database");
+        }
+    });
+};
+
+connectWithRetry();
 
 // Add error event listener to handle unexpected connection termination
 database.on('error', (err) => {
