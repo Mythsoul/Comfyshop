@@ -6,6 +6,7 @@ import rateLimit from "express-rate-limit";
 import session from "express-session";
 import cors from "cors"; // Import cors
 import cookieParser from "cookie-parser";
+import itemRoutes from './routes/itemsRoutes.js'; 
 
 dotenv.config(); 
 const app = express(); 
@@ -33,11 +34,16 @@ app.use(cookieParser());
 app.use(session({
     secret: 'just a random secret', 
     resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false } 
+    saveUninitialized: false, // Change to false to avoid saving uninitialized sessions
+    cookie: { 
+        secure: false, // Set to true if using HTTPS
+        httpOnly: true, // Ensure the cookie is only accessible via HTTP(S)
+        maxAge: 1000 * 60 * 60 * 24 // Set cookie expiration time (e.g., 1 day)
+    } 
 }));
 
 app.use(authRoutes);
+app.use(itemRoutes); 
 
 app.listen(port , ()=>{ 
     console.log(`Server is running on port ${port}`);

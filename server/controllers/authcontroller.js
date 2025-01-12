@@ -32,9 +32,11 @@ export const login = async (req, res) => {
 export const logout = (req, res) => {
   req.session.destroy(err => {
     if (err) {
+      console.log("Error While logging out", err);
       return res.status(500).send('Could not log out.');
     } else {
-      res.send('Logged out');
+      res.clearCookie('connect.sid', { path: '/' }); // Clear the session cookie
+      res.status(200).send('Logged out'); // Ensure the response status is 200
     }
   });
 };
@@ -62,7 +64,6 @@ export const registerUser = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
-
 
 export const isAuthenticated = (req, res) => {
   if (req.session.user) {
