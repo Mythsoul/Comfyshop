@@ -20,7 +20,7 @@ import { useDispatch } from 'react-redux'
 import { login } from '@/store/Authslice'
 export default function Homepage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false); 
-  const [user , setuser] = useState({ 
+  const [user , setUser] = useState({ 
    username : "",
    email : "", 
 
@@ -36,9 +36,9 @@ useEffect(()=>{
   const checkAuthStatus = async () => {
     try {
       const response = await axios.get(import.meta.env.VITE_CHECK_AUTH_URL);
-      if (response.status === 200 && response.data) { 
-        dispatch(login(response.data));
-        setuser(response.data);
+      if (response.status === 200 && response.data.authenticated) { 
+        dispatch(login(response.data.user));
+        setUser(response.data.user);
 
       }
     } catch (error) {
@@ -50,7 +50,7 @@ useEffect(()=>{
   checkAuthStatus(); 
   
   
-} , []);
+} , [dispatch]);
 
   return (
     <div className="min-h-screen bg-white">

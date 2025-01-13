@@ -1,18 +1,48 @@
 import React, { useEffect } from 'react';
-import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import axios from "axios";
+import { login, setLoading } from '@/store/Authslice';
+
+// Ensure axios defaults are set once
+axios.defaults.withCredentials = true;
 
 const EnsureAuthenticated = ({ children }) => {
-    const isAuthenticated = useSelector(state => state.auth.isAuthenticated);
-    const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-    useEffect(() => {
-        if (!isAuthenticated) {
-            navigate('/login');
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      dispatch(setLoading(true));
+      try {
+        const response = await axios.get(import.meta.env.VITE_CHECK_AUTH_URL);
+        if (response.status === 200 && response.data.authenticated) {
+          dispatch(login(response.data.user));
         }
-    }, [isAuthenticated, navigate]);
+      } catch (error) {
+        console.error('Failed to check auth status', error);
+      } finally {
+        dispatch(setLoading(false));
+      }
+    };
 
-    return isAuthenticated ? children : null;
-};
+    checkAuthStatus();
+  }, [dispatch]);
+
+  const navigate = useNavigate();
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+  const loading = useSelector((state) => state.auth.loading);
+
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      navigate('/login');
+    }
+  }, [isAuthenticated, loading, navigate]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  return isAuthenticated ? children : null;
+}
 
 export default EnsureAuthenticated;

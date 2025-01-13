@@ -1,19 +1,19 @@
-import React, { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useDispatch, useSelector } from 'react-redux'
-import axios from "axios"
-import { login, setLoading } from '@/store/Authslice'
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import axios from "axios";
+import { login, setLoading } from '@/store/Authslice';
 
 const ForwardAuthenticated = ({ children }) => {
   axios.defaults.withCredentials = true;
-  const dispatch = useDispatch(); 
+  const dispatch = useDispatch();
 
-  useEffect(() => { 
+  useEffect(() => {
     const checkAuthStatus = async () => {
       dispatch(setLoading(true));
       try {
         const response = await axios.get(import.meta.env.VITE_CHECK_AUTH_URL);
-        if (response.status === 200 && response.data.authenticated) { 
+        if (response.status === 200 && response.data.authenticated) {
           dispatch(login(response.data.user));
         }
       } catch (error) {
@@ -21,7 +21,7 @@ const ForwardAuthenticated = ({ children }) => {
       } finally {
         dispatch(setLoading(false));
       }
-    } 
+    };
 
     checkAuthStatus();
   }, [dispatch]);
