@@ -1,14 +1,19 @@
-import express from "express"; 
+import express from "express";
 
- 
-
-export const forwardauthenticate = (req , res, next)=> { 
-    const authenticated = req.isAuthenticated(); 
-    if(authenticated){ 
-        res.redirect("/"); 
-    }else{ 
-        next(); 
+export const forwardAuthenticated = (req, res, next) => {
+    if (req.isAuthenticated()) {
+        res.redirect("/");
+    } else {
+        next();
     }
-}
+};
+
+export const ensureAuthenticated = (req, res, next) => {
+    if (req.isAuthenticated()) {
+        next();
+    } else {
+        res.redirect("/login");
+    }
+};
 
 
