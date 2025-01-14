@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
-import { PlusIcon, CurrencyIcon as CurrencyDollarIcon, TagIcon, TruckIcon, ArchiveIcon as ArchiveBoxIcon, BuildingIcon as BuildingStorefrontIcon, TextIcon as DocumentTextIcon, PercentIcon } from 'lucide-react'
+import { PlusIcon, CurrencyIcon as CurrencyDollarIcon, TagIcon, TruckIcon, ArchiveIcon as ArchiveBoxIcon, BuildingIcon as BuildingStorefrontIcon, TextIcon as DocumentTextIcon, PercentIcon, ImageIcon, X } from 'lucide-react'
 import axios from "axios"
 import { useNavigate } from 'react-router'
 import { useId } from 'react'
@@ -57,7 +57,9 @@ export default function AddItems() {
     brand: '',
     quantity: '',
     shipping: '',
-    discount: ''
+    discount: '',
+    image: null,
+    imagePreview: null
   });
 
   const handleChange = (e) => {
@@ -75,34 +77,67 @@ export default function AddItems() {
     }));
   };
 
+  const handleImageChange = (e) => {
+    console.log(e.target.files[0]);
+    const file = e.target.files[0];
+    if (file) {
+      setFormData(prev => ({
+        ...prev,
+        image: file,
+        imagePreview: URL.createObjectURL(file)
+      }));
+    }
+  };
+
   const handleSubmit = async(e) => {
     e.preventDefault();
-   try{ 
-    setAdding(true);
-     const response = await axios.post(import.meta.env.VITE_ADD_ITEM_API_URL, { ...formData, item_id: uuidv4() });
-    if(response.status === 201){
+   try { 
+      setAdding(true);
+      
+      // Create FormData object
+      const formDataToSend = new FormData();
+      
+      // Append all form fields
+      Object.keys(formData).forEach(key => {
+        if (key !== 'imagePreview') { // Skip the preview URL
+          formDataToSend.append(key, formData[key]);
+        }
+      });
+
+      const response = await axios.post(
+        import.meta.env.VITE_ADD_ITEM_API_URL, 
+        formDataToSend,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      );
+      if(response.status === 201){
+        setAdding(false);
+        navigate("/"); 
+            toast({
+              title: "Item Added",
+              description: "Your new item has been successfully added to the inventory.",
+            })
+            
+            setFormData({
+              itemName: '',
+              price: '',
+              description: '',
+              category: '',
+              brand: '',
+              quantity: '',
+              shipping: '',
+              discount: '',
+              image: null,
+              imagePreview: null
+            });
+      }
+    } catch(err) { 
+      console.log("error while submitting items: ", err);
       setAdding(false);
-      navigate("/"); 
-          toast({
-            title: "Item Added",
-            description: "Your new item has been successfully added to the inventory.",
-          })
-          
-          setFormData({
-            itemName: '',
-            price: '',
-            description: '',
-            category: '',
-            brand: '',
-            quantity: '',
-            shipping: '',
-            discount: ''
-          });
     }
-   }catch(err){ 
-    console.log("eror while submitting items : " , err);
-   }
-  
   };
 
   return (
@@ -220,6 +255,37 @@ export default function AddItems() {
                 min="0"
                 max="100"
               />
+
+              <div className="sm:col-span-2 space-y-2">
+                <Label htmlFor="image">Product Image</Label>
+                <div className="grid gap-4">
+                  <Input
+                    type="file"
+                    id="image"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="cursor-pointer"
+                  />
+                  {formData.imagePreview && (
+                    <div className="relative aspect-square w-40 mx-auto">
+                      <img
+                        src={formData.imagePreview}
+                        alt="Preview"
+                        className="rounded-lg object-cover w-full h-full"
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-2 right-2"
+                        onClick={() => setFormData(prev => ({ ...prev, image: null, imagePreview: null }))}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
             <div className="flex justify-end">

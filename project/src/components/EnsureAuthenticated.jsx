@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import axios from "axios";
 import { login, setLoading } from '@/store/Authslice';
 
-// Ensure axios defaults are set once
+
 axios.defaults.withCredentials = true;
 
 const EnsureAuthenticated = ({ children }) => {
