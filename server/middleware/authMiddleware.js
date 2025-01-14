@@ -7,6 +7,7 @@ export const forwardAuthenticated = (req, res, next) => {
 } 
 
 
+
 export const ensureAuthenticated = (req, res, next) => {
     if (req.session.user) {
         next();
