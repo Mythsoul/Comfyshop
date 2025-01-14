@@ -1,5 +1,3 @@
-'use client'
-
 import React, { useState } from 'react'
 import { useToast } from '@/hooks/use-toast'
 import { Button } from "@/components/ui/button"
@@ -10,6 +8,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { PlusIcon, CurrencyIcon as CurrencyDollarIcon, TagIcon, TruckIcon, ArchiveIcon as ArchiveBoxIcon, BuildingIcon as BuildingStorefrontIcon, TextIcon as DocumentTextIcon, PercentIcon } from 'lucide-react'
 import axios from "axios"
+import { useNavigate } from 'react-router'
+import { useId } from 'react'
+import { v4 as uuidv4 } from 'uuid'
+
+
+
 const InputField = ({ icon: Icon, label, ...props }) => (
   <div className="space-y-2">
     <Label htmlFor={props.id}>{label}</Label>
@@ -40,8 +44,12 @@ const SelectField = ({ icon: Icon, label, ...props }) => (
 );
 
 export default function AddItems() {
-  const { toast } = useToast()
+  const [adding , setAdding] = useState(false);
+  const { toast } = useToast(); 
+  const navigate = useNavigate(); 
+  const id = useId(); 
   const [formData, setFormData] = useState({
+    item_id: uuidv4(),
     itemName: '',
     price: '',
     description: '',
@@ -70,27 +78,31 @@ export default function AddItems() {
   const handleSubmit = async(e) => {
     e.preventDefault();
    try{ 
-     const response = await axios.post(import.meta.env.VITE_ADD_ITEM_API_URL, formData);
-     console.log("response : " , response);
+    setAdding(true);
+     const response = await axios.post(import.meta.env.VITE_ADD_ITEM_API_URL, { ...formData, item_id: uuidv4() });
+    if(response.status === 201){
+      setAdding(false);
+      navigate("/"); 
+          toast({
+            title: "Item Added",
+            description: "Your new item has been successfully added to the inventory.",
+          })
+          
+          setFormData({
+            itemName: '',
+            price: '',
+            description: '',
+            category: '',
+            brand: '',
+            quantity: '',
+            shipping: '',
+            discount: ''
+          });
+    }
    }catch(err){ 
     console.log("eror while submitting items : " , err);
    }
-    console.log('Form submitted:', formData);
-    toast({
-      title: "Item Added",
-      description: "Your new item has been successfully added to the inventory.",
-    })
-    // Reset form after submission
-    setFormData({
-      itemName: '',
-      price: '',
-      description: '',
-      category: '',
-      brand: '',
-      quantity: '',
-      shipping: '',
-      discount: ''
-    });
+  
   };
 
   return (
@@ -211,9 +223,9 @@ export default function AddItems() {
             </div>
 
             <div className="flex justify-end">
-              <Button type="submit">
+              <Button type="submit" disabled ={adding}>
                 <PlusIcon className="h-5 w-5 mr-2" />
-                Add Item
+                {adding ? "Adding..." : "Add Item"}
               </Button>
             </div>
           </form>

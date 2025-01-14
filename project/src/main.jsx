@@ -33,7 +33,7 @@ createRoot(document.getElementById('root')).render(
               </ForwardAuthenticated>
             } />
             <Route path='/additems' element={<Additems />} />
-            <Route path='/logout' element={<EnsureAuthenticated><Logout /></EnsureAuthenticated>} />
+            <Route path='/logout' element={<Logout /> } />
             <Route path='*' element={<h1>404 Not Found</h1>} />
           </Routes>
         </Layout>
