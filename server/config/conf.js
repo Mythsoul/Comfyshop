@@ -1,10 +1,13 @@
-import dotenv from "dotenv";
+import dotenv from "dotenv"; 
 
-dotenv.config();
+dotenv.config(); 
 
-export const conf = { 
-    AppwriteUrl: process.env.APPWRITE_URL,
-    Appwrite_projectid: process.env.APPWRITE_PROJECT_ID,
-    AppwriteApiKey: process.env.APPWRITE_API_KEY,
-    Appwrite_Bucketid: process.env.APPWRITE_BUCKET_ID
-};
+const conf = { 
+    AppwriteUrl : process.env.Appwrite_Endpoint_Url, 
+    Appwrite_projectid : process.env.Appwrite_Project_Id, 
+    Appwrite_Bucketid : process.env.Appwrite_Bucket_Id,
+    AppwriteApiKey: process.env.AppwriteApiKey
+
+}
+
+export default conf; 
