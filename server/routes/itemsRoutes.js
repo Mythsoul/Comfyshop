@@ -7,5 +7,6 @@ const router = express();
 
 router.get("/api/getitems", getItems);
 router.post("/api/createItem", upload.single('image'), createItem);
-
+// router.put('/:id', upload.single('image'), updateItem);
+// router.delete('/:id', deleteItem);
 export default router;
