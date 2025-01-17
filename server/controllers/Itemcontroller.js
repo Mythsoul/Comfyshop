@@ -1,9 +1,10 @@
 import { database as db } from "../config/db.js";
-import { storage, BUCKET_ID } from '../appwrite/config.js';
+import { uploadImage, BUCKET_ID } from '../appwrite/config.js';
 import { ID } from 'node-appwrite';
-import fs from 'fs';
-import path from 'path';
-import os from 'os';
+import { conf } from '../config/conf.js';
+import dotenv from "dotenv"
+
+dotenv.config();
 
 // Middleware for getting items
 export const getItems = async (req, res) => {
@@ -19,7 +20,7 @@ export const getItems = async (req, res) => {
     const formattedItems = items.rows.map(item => ({
       ...item,
       imageUrl: item.image_id
-        ? `${process.env.AppwriteUrl}/storage/buckets/${BUCKET_ID}/files/${item.image_id}/view`
+        ? `${conf.AppwriteUrl}/storage/buckets/${BUCKET_ID}/files/${item.image_id}/view?project=${conf.Appwrite_projectid}`
         : null
     }));
 
@@ -32,32 +33,53 @@ export const getItems = async (req, res) => {
 
 // Middleware for creating an item
 export const createItem = async (req, res) => {
-  const { item_id, itemName, price, description, category, brand, quantity, shipping, discount } = req.body;
+  const { itemName, price, description, category, brand, quantity, shipping, discount } = req.body;
+  const item_id = ID.unique();
 
   try {
-    // Handle file upload if present
+    // Convert numeric values
+    const numericPrice = parseFloat(price) || 0;
+    const numericQuantity = parseInt(quantity) || 0;
+    const numericDiscount = parseFloat(discount) || 0;
+
     let fileId = null;
     if (req.file) {
       fileId = ID.unique();
-
       try {
-        await storage.createFile(
-          BUCKET_ID,
-          fileId,
-          req.file.buffer // Upload file buffer
+        // Get file details from multer
+        const { originalname, buffer, mimetype } = req.file;
+        
+        await uploadImage(
+          buffer,
+          originalname,
+          fileId
         );
       } catch (uploadError) {
         console.error("Error uploading file to Appwrite:", uploadError);
-        return res.status(500).json({ message: "File upload failed" });
+        return res.status(500).json({ 
+          message: "File upload failed", 
+          error: uploadError.message,
+          details: uploadError.stack
+        });
       }
     }
 
-    // Insert new item into the database
+    // Insert new item into the database with proper type conversion
     const newItem = await db.query(
       `INSERT INTO items(item_id, itemName, price, description, category, brand, quantity, shipping, discount)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        RETURNING item_id, itemName, price, description, category, brand, quantity, shipping, discount`,
-      [item_id, itemName, price, description, category, brand, quantity, shipping, discount]
+      [
+        item_id, 
+        itemName, 
+        numericPrice, 
+        description, 
+        category, 
+        brand, 
+        numericQuantity, 
+        shipping, 
+        numericDiscount
+      ]
     );
 
     // Insert image ID into the images table if file was uploaded
@@ -71,7 +93,7 @@ export const createItem = async (req, res) => {
     res.status(201).json({
       ...newItem.rows[0],
       imageUrl: fileId
-        ? `${process.env.AppwriteUrl}/storage/buckets/${BUCKET_ID}/files/${fileId}/view`
+        ? storage.getFileView(BUCKET_ID, fileId)
         : null,
     });
   } catch (err) {
@@ -79,6 +101,7 @@ export const createItem = async (req, res) => {
     res.status(500).json({
       message: "Failed to create item",
       error: err.message,
+      details: err.stack
     });
   }
 };
